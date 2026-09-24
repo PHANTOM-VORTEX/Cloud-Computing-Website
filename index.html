@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="A beautiful interactive guide to the night sky.">
+  <title>Stargaze — Explore the Night Sky</title>
+
+  <style>
+    :root {
+      --bg: #050816;
+      --panel: rgba(15, 23, 50, 0.72);
+      --text: #f8fafc;
+      --muted: #a5b4d4;
+      --accent: #8b5cf6;
+      --accent2: #22d3ee;
+      --border: rgba(255,255,255,.10);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 20% 20%, rgba(99,102,241,.18), transparent 28%),
+        radial-gradient(circle at 80% 10%, rgba(34,211,238,.12), transparent 25%),
+        var(--bg);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: .7;
+      background-image:
+        radial-gradient(circle, white 1px, transparent 1.5px),
+        radial-gradient(circle, white .7px, transparent 1px);
+      background-size: 130px 130px, 83px 83px;
+      background-position: 15px 20px, 45px 70px;
+    }
+
+    nav {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      z-index: 10;
+      padding: 18px 7%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      backdrop-filter: blur(14px);
+      background: rgba(5,8,22,.65);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo {
+      font-weight: 800;
+      letter-spacing: .08em;
+      font-size: 1.1rem;
+    }
+
+    nav a {
+      color: var(--muted);
+      text-decoration: none;
+      margin-left: 24px;
+      font-size: .95rem;
+    }
+
+    nav a:hover { color: white; }
+
+    .hero {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 110px 20px 70px;
+      position: relative;
+    }
+
+    .planet {
+      position: absolute;
+      width: 300px;
+      height: 300px;
+      border-radius: 50%;
+      right: 7%;
+      top: 20%;
+      background:
+        radial-gradient(circle at 35% 30%, #a78bfa, #4c1d95 45%, #16052e 75%);
+      box-shadow: 0 0 90px rgba(139,92,246,.35);
+      opacity: .8;
+    }
+
+    .hero-content { max-width: 850px; position: relative; z-index: 1; }
+
+    .eyebrow {
+      color: #67e8f9;
+      text-transform: uppercase;
+      letter-spacing: .2em;
+      font-size: .8rem;
+      font-weight: 700;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      font-size: clamp(3.5rem, 9vw, 7.5rem);
+      line-height: .92;
+      letter-spacing: -.06em;
+      margin-bottom: 28px;
+    }
+
+    h1 span {
+      background: linear-gradient(90deg, #fff, #c4b5fd, #67e8f9);
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+
+    .hero p {
+      color: var(--muted);
+      font-size: clamp(1rem, 2vw, 1.25rem);
+      line-height: 1.7;
+      max-width: 650px;
+      margin: auto;
+    }
+
+    .buttons {
+      margin-top: 35px;
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 14px 23px;
+      border-radius: 999px;
+      text-decoration: none;
+      color: white;
+      font-weight: 700;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.06);
+      transition: .25s;
+    }
+
+    .btn.primary {
+      background: linear-gradient(135deg, var(--accent), #6366f1);
+      border: none;
+    }
+
+    .btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 35px rgba(99,102,241,.25);
+    }
+
+    section {
+      position: relative;
+      z-index: 1;
+      padding: 90px 7%;
+    }
+
+    .section-title {
+      max-width: 700px;
+      margin-bottom: 35px;
+    }
+
+    .section-title h2 {
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      margin-bottom: 12px;
+    }
+
+    .section-title p { color: var(--muted); line-height: 1.7; }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 30px;
+      backdrop-filter: blur(14px);
+      transition: .25s;
+    }
+
+    .card:hover {
+      transform: translateY(-6px);
+      border-color: rgba(139,92,246,.45);
+    }
+
+    .icon {
+      width: 52px;
+      height: 52px;
+      display: grid;
+      place-items: center;
+      border-radius: 15px;
+      background: rgba(139,92,246,.16);
+      font-size: 1.6rem;
+      margin-bottom: 20px;
+    }
+
+    .card h3 { margin-bottom: 10px; font-size: 1.3rem; }
+    .card p { color: var(--muted); line-height: 1.65; }
+
+    .fact {
+      margin-top: 25px;
+      padding: 22px;
+      border-radius: 18px;
+      border: 1px solid var(--border);
+      background: rgba(34,211,238,.06);
+      color: #dbeafe;
+    }
+
+    footer {
+      text-align: center;
+      padding: 35px 20px;
+      color: #71809f;
+      border-top: 1px solid var(--border);
+      position: relative;
+      z-index: 1;
+    }
+
+    @media (max-width: 800px) {
+      .cards { grid-template-columns: 1fr; }
+      .planet { width: 180px; height: 180px; right: -50px; top: 18%; opacity: .35; }
+      nav a { margin-left: 10px; }
+      nav a:not(:last-child) { display: none; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <nav>
+    <div class="logo">✦ STARGAZE</div>
+    <div>
+      <a href="#discover">Discover</a>
+      <a href="#facts">Facts</a>
+      <a href="#start">Start Exploring</a>
+    </div>
+  </nav>
+
+  <header class="hero" id="start">
+    <div class="planet"></div>
+
+    <div class="hero-content">
+      <div class="eyebrow">A tiny window into a massive universe</div>
+      <h1>Look up.<br><span>Wonder more.</span></h1>
+      <p>
+        The night sky is filled with stories millions and billions of years old.
+        Learn a little, step outside, and start finding them for yourself.
+      </p>
+
+      <div class="buttons">
+        <a class="btn primary" href="#discover">Explore the sky ↓</a>
+        <a class="btn" href="#facts">Surprise me ✦</a>
+      </div>
+    </div>
+  </header>
+
+  <section id="discover">
+    <div class="section-title">
+      <h2>Where should you begin?</h2>
+      <p>
+        You don't need expensive equipment. Start with the objects that are
+        easiest to recognize and work your way outward.
+      </p>
+    </div>
+
+    <div class="cards">
+      <article class="card">
+        <div class="icon">🌙</div>
+        <h3>The Moon</h3>
+        <p>
+          Earth's nearest natural neighbor changes appearance throughout the
+          month. Its craters are surprisingly easy to see with binoculars.
+        </p>
+      </article>
+
+      <article class="card">
+        <div class="icon">⭐</div>
+        <h3>Constellations</h3>
+        <p>
+          Patterns such as Orion and the Big Dipper can become familiar
+          landmarks that help you navigate the rest of the sky.
+        </p>
+      </article>
+
+      <article class="card">
+        <div class="icon">🪐</div>
+        <h3>Planets</h3>
+        <p>
+          Bright planets can stand out from the stars. With a telescope,
+          some reveal moons, rings, or atmospheric detail.
+        </p>
+      </article>
+    </div>
+  </section>
+
+  <section id="facts">
+    <div class="section-title">
+      <h2>Cosmic facts</h2>
+      <p>A few reminders that make the universe feel a little stranger.</p>
+    </div>
+
+    <div class="cards">
+      <article class="card">
+        <h3>Light is a time machine.</h3>
+        <p>
+          When you look at a distant object, you see light that has traveled
+          across space before reaching your eyes.
+        </p>
+      </article>
+
+      <article class="card">
+        <h3>Our Sun is a star.</h3>
+        <p>
+          It only appears dramatically larger and brighter because Earth is
+          much closer to it than to the other stars.
+        </p>
+      </article>
+
+      <article class="card">
+        <h3>Space is enormous.</h3>
+        <p>
+          The observable universe contains an immense number of galaxies,
+          each containing vast populations of stars.
+        </p>
+      </article>
+    </div>
+
+    <div class="fact">
+      💡 <strong>Try this tonight:</strong>
+      Turn off nearby lights, give your eyes 15–20 minutes to adjust, and
+      simply look upward. You may notice far more than you expect.
+    </div>
+  </section>
+
+  <footer>
+    Made for curious humans · STARGAZE © 2026
+  </footer>
+
+</body>
+</html>
